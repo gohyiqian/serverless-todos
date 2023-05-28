@@ -1,5 +1,7 @@
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ddbClient } from "./ddbconfig.js";
+import { ddbClient } from "./ddbconfig.mjs";
+
+export const tableName = process.env.DYNAMODB_TABLE;
 
 const marshallOptions = {
   // Whether to automatically convert empty strings, blobs, and sets to `null`.

@@ -2,9 +2,9 @@ service: ${self:custom.vars.appName}
 
 frameworkVersion: "3"
 
-plugins:
-  - serverless-offline
-  - serverless-s3-local
+# plugins:
+#   - serverless-offline
+#   - serverless-s3-local
 
 package:
   excludeDevDependencies: true
@@ -35,7 +35,8 @@ custom:
 
 provider:
   name: aws
-  runtime: nodejs16.x
+  runtime: nodejs18.x
+  # lambdaHashingVersion: "20201221"
   stage: ${opt:stage, 'dev'}
   region: ${self:custom.vars.region, 'ap-southeast-2'}
   stackName: ${self:custom.namePrefix}-Serverless
@@ -75,6 +76,13 @@ functions:
       - httpApi:
           path: /todos
           method: post
+  listTodo:
+    name: ${self:custom.namePrefix}-listTodo
+    handler: src/lambda/listTodo.handler
+    events:
+      - httpApi:
+          path: /todos
+          method: get
 
 resources:
   # This section is using CloudFormation template syntax
