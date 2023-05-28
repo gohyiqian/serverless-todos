@@ -15,7 +15,7 @@ package:
     - "!package-lock.json"
     - "!Dockerfile"
     - '!"**.yml"'
-    - "!README.md"
+    - "!**.md"
     - "!.next/**"
     - "!out/**"
     - "!.github/**"

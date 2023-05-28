@@ -1,10 +1,12 @@
 "use strict";
+const uuid = require("uuid");
+const AWS = require("aws-sdk");
+// import { PutCommand } from "@aws-sdk/lib-dynamodb";
+// import { ddbDocClient } from "../../config/ddbDocClient";
 
-import uuid from "uuid";
-import { PutCommand } from "@aws-sdk/lib-dynamodb";
-import { ddbDocClient } from "../../config/ddbDocClient";
+const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-export const handler = async (event, context, callback) => {
+module.exports.create = (event, context, callback) => {
   console.log("EVENT: \n" + JSON.stringify(event, null, 2));
   const timestamp = new Date().getTime();
   const data = JSON.parse(event.body);
@@ -31,7 +33,8 @@ export const handler = async (event, context, callback) => {
   };
 
   // write the todo to the database
-  ddbDocClient.send(new PutCommand(params), (error) => {
+  // ddbDocClient.send(new PutCommand(params), (error) => {
+  dynamoDb.put(params, (error) => {
     // handle potential errors
     if (error) {
       console.error(error);
