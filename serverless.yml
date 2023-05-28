@@ -5,21 +5,30 @@ frameworkVersion: "3"
 plugins:
   - serverless-offline
   - serverless-s3-local
+  - serverless-deployment-bucket
 
 package:
   excludeDevDependencies: true
   patterns:
     - "!node_modules/**"
+    - "!.env"
     - "!package.json"
     - "!package-lock.json"
     - "!Dockerfile"
     - '!"**.yml"'
     - "!README.md"
-    - "!.next"
-    - "!out"
-    - "!.github"
-    - "!.serverless"
-    - "!next.config"
+    - "!.next/**"
+    - "!out/**"
+    - "!.github/**"
+    - "!serverless-vars.yml"
+    - "!.serverless/**"
+    - "!next.config.js"
+    - "!next-env.d"
+    - "!tailwind.config.js"
+    - "!postcss.config.js"
+    - "!src/app/**"
+    - "src/lambda"
+    - "!public/**"
 
 custom:
   vars: ${file(./serverless-vars.yml):${self:provider.stage}}
@@ -32,8 +41,12 @@ provider:
   region: ${self:custom.vars.region, 'ap-southeast-2'}
   stackName: ${self:custom.namePrefix}-Serverless
   apiName: ${self:custom.namePrefix}
+  deploymentBucket:
+    name: ${self:custom.vars.appName}-${self:provider.stage}-deploymentBucket
+    serverSideEncryption: AES256
   environment:
     DYNAMODB_TABLE: ${self:custom.vars.appName}-${self:provider.stage}-ddb
+    REGION: ${self:custom.vars.region, 'ap-southeast-2'}
   httpApi:
     cors: true
   iam:
@@ -67,7 +80,7 @@ functions:
           method: post
 
 resources:
-  # Using CloudFormation template syntax
+  # This section is using CloudFormation template syntax
   Resources:
     TodosDDBTable:
       Type: "AWS::DynamoDB::Table"
@@ -83,16 +96,3 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-
-    # GatewayResponse:
-    #   Type: AWS::ApiGateway::GatewayResponse
-    #   Properties:
-    #     ResponseParameters:
-    #       gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-    #       gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-    #     ResponseType: INTEGRATION_TIMEOUT
-    #     ResponseTemplates:
-    #       "application/json": '{"code":"5040001", "message":"ApiGateway Integration Timeout"}'
-    #     RestApiId:
-    #       Ref: "ApiGatewayRestApi"
-    #     StatusCode: "504"

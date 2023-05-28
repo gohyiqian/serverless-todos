@@ -1,13 +1,14 @@
 "use strict";
 
-const uuid = require("uuid");
-const AWS = require("aws-sdk"); // eslint-disable-line import/no-extraneous-dependencies
+import uuid from "uuid";
+import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { ddbDocClient } from "../../config/ddbDocClient";
 
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
-
-module.exports.handler = (event, context, callback) => {
+export const handler = async (event, context, callback) => {
+  console.log("EVENT: \n" + JSON.stringify(event, null, 2));
   const timestamp = new Date().getTime();
   const data = JSON.parse(event.body);
+
   if (typeof data.text !== "string") {
     console.error("Validation Failed");
     callback(null, {
@@ -30,14 +31,14 @@ module.exports.handler = (event, context, callback) => {
   };
 
   // write the todo to the database
-  dynamoDb.put(params, (error) => {
+  ddbDocClient.send(new PutCommand(params), (error) => {
     // handle potential errors
     if (error) {
       console.error(error);
       callback(null, {
         statusCode: error.statusCode || 501,
         headers: { "Content-Type": "text/plain" },
-        body: "Couldn't create the todo item.",
+        body: "Could not create the todo item.",
       });
       return;
     }
