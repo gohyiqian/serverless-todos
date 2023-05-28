@@ -1,6 +1,5 @@
 import { ddbDocClient, tableName } from "../config/ddbDocClient.mjs";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
-import uuid from "uuid";
 
 export const handler = async (event, context) => {
   console.log("EVENT: \n" + JSON.stringify(event, null, 2));

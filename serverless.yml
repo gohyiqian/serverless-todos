@@ -83,6 +83,27 @@ functions:
       - httpApi:
           path: /todos
           method: get
+  getTodo:
+    name: ${self:custom.namePrefix}-getTodo
+    handler: src/lambda/getTodo.handler
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: get
+  updateTodo:
+    name: ${self:custom.namePrefix}-updateTodo
+    handler: src/lambda/updateTodo.handler
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: put
+  deleteTodo:
+    name: ${self:custom.namePrefix}-deleteTodo
+    handler: src/lambda/deleteTodo.handler
+    events:
+      - httpApi:
+          path: /todos/{id}
+          method: delete
 
 resources:
   # This section is using CloudFormation template syntax
