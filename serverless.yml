@@ -5,7 +5,6 @@ frameworkVersion: "3"
 plugins:
   - serverless-offline
   - serverless-s3-local
-  - serverless-deployment-bucket
 
 package:
   excludeDevDependencies: true
@@ -41,9 +40,6 @@ provider:
   region: ${self:custom.vars.region, 'ap-southeast-2'}
   stackName: ${self:custom.namePrefix}-Serverless
   apiName: ${self:custom.namePrefix}
-  deploymentBucket:
-    name: ${self:custom.vars.appName}-${self:provider.stage}-deploymentBucket
-    serverSideEncryption: AES256
   environment:
     DYNAMODB_TABLE: ${self:custom.vars.appName}-${self:provider.stage}-ddb
     REGION: ${self:custom.vars.region, 'ap-southeast-2'}
