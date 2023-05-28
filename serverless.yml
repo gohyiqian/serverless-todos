@@ -28,6 +28,8 @@ package:
     - "!src/app/**"
     - "src/lambda"
     - "!public/**"
+    - "!tsconfig.json"
+    - "!next-env.d.ts"
 
 custom:
   vars: ${file(./serverless-vars.yml):${self:provider.stage}}
