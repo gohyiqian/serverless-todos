@@ -1,0 +1,98 @@
+service: ${self:custom.vars.appName}
+
+frameworkVersion: "3"
+
+plugins:
+  - serverless-offline
+  - serverless-s3-local
+
+package:
+  excludeDevDependencies: true
+  patterns:
+    - "!node_modules/**"
+    - "!package.json"
+    - "!package-lock.json"
+    - "!Dockerfile"
+    - '!"**.yml"'
+    - "!README.md"
+    - "!.next"
+    - "!out"
+    - "!.github"
+    - "!.serverless"
+    - "!next.config"
+
+custom:
+  vars: ${file(./serverless-vars.yml):${self:provider.stage}}
+  namePrefix: ${self:custom.vars.appName}-${self:provider.stage}-api
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${self:custom.vars.region, 'ap-southeast-2'}
+  stackName: ${self:custom.namePrefix}-Serverless
+  apiName: ${self:custom.namePrefix}
+  environment:
+    DYNAMODB_TABLE: ${self:custom.vars.appName}-${self:provider.stage}-ddb
+  httpApi:
+    cors: true
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${aws:region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+
+layers:
+  todo:
+    path: src/layer
+    name: ${self:custom.namePrefix}-LambdaLayer
+    description: "Node.js dependencies"
+
+functions:
+  createTodo:
+    name: ${self:custom.namePrefix}-createTodo
+    handler: src/lambda/createTodo.handler
+    layers:
+      - { Ref: TodoLambdaLayer }
+    events:
+      - httpApi:
+          path: /todos
+          method: post
+
+resources:
+  # Using CloudFormation template syntax
+  Resources:
+    TodosDDBTable:
+      Type: "AWS::DynamoDB::Table"
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        TableName: ${self:provider.environment.DYNAMODB_TABLE}
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    # GatewayResponse:
+    #   Type: AWS::ApiGateway::GatewayResponse
+    #   Properties:
+    #     ResponseParameters:
+    #       gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+    #       gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+    #     ResponseType: INTEGRATION_TIMEOUT
+    #     ResponseTemplates:
+    #       "application/json": '{"code":"5040001", "message":"ApiGateway Integration Timeout"}'
+    #     RestApiId:
+    #       Ref: "ApiGatewayRestApi"
+    #     StatusCode: "504"
